@@ -10,6 +10,7 @@ const resources = {
       "Seed": "Seed",
       "Range": "Range",
       "Settings": "Settings",
+      "About": "About",
       "CopiedToClipboard": "Copied to clipboard.",
     }
   }

@@ -2,8 +2,9 @@ import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonList
 import { diceSharp, ellipsisHorizontal, ellipsisVertical } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { Clipboard } from '@capacitor/clipboard';
-import { Preferences } from '@capacitor/preferences';
 import { Toast } from '@capacitor/toast';
+import { getSeed, getRandomSeed, getRangeMin, getRangeMax, setSettings, saveSettings as saveSetSettings } from '../settings';
+import { nextIntRange as randNextRange, setSeed as randSetSeed, reset as randReset } from '../random';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import './css/Home.css';
 
@@ -17,22 +18,31 @@ const copyToClipboard = async (text: string, toast: string = "") => {
     });
   }
 }
+const saveSettings = (seed: string, randomSeed: boolean, rangeMin: number, rangeMax: number) => {
+  setSettings({
+    seed,
+    randomSeed,
+    rangeMin,
+    rangeMax,
+  });
+  randSetSeed(seed);
+  saveSetSettings();
+}
 
 const Home: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const randoMin = useRef("0");
-  const randoMax = useRef("9999");
-  const [randoSeed, setRandoSeed] = useState("0");
-  const randoRandomSeed = useRef(true);
+  const randoMin = useRef(getRangeMin());
+  const randoMax = useRef(getRangeMax());
+  const [randoSeed, setRandoSeed] = useState(getSeed());
+  const randoRandomSeed = useRef(getRandomSeed());
   const [randoStr, setRandoStr] = useState(localStorage.getItem("randostr") || "0");
   const [randoStrSize, setRandoStrSize] = useState(6.0);
   const [randoStrWeight, setRandoStrWeight] = useState(700);
   useEffect(() => {
     localStorage.setItem("randostr", randoStr);
   }, [randoStr]);
-  useEffect(() => {
-    
-  }, [randoSeed]);
+  /*useEffect(() => {
+  }, [randoSeed]);*/
   const randoTextTapEvent = useCallback(
     () => {
       copyToClipboard(randoStr, t("CopiedToClipboard"));
@@ -40,10 +50,12 @@ const Home: React.FC = () => {
   );
   const rollEvent = useCallback(
     () => {
-    }, []
+      setRandoStr(String(randNextRange(randoMin.current, randoMax.current)));
+    }, [randoMin, randoMax]
   );
   const resetEvent = () => {
     setRandoStr("0");
+    randReset();
   }
 
   return (
@@ -59,7 +71,7 @@ const Home: React.FC = () => {
           <IonPopover trigger='menu-button' dismissOnSelect={true}>
             <IonContent>
               <IonList>
-                <IonItem button={true} detail={false}>{t("Reset")}</IonItem>
+                <IonItem button={true} detail={false} onClick={resetEvent}>{t("Reset")}</IonItem>
               </IonList>
               <IonList>
                 <IonItem button={true} detail={false}>{t("Seed")}</IonItem>
@@ -68,7 +80,7 @@ const Home: React.FC = () => {
                 <IonItem button={true} detail={false}>{t("Range")}</IonItem>
               </IonList>
               <IonList>
-                <IonItem button={true} detail={false}>{t("Settings")}</IonItem>
+                <IonItem button={true} detail={false}>{t("About")}</IonItem>
               </IonList>
             </IonContent>
           </IonPopover>
@@ -76,7 +88,7 @@ const Home: React.FC = () => {
       </IonHeader>
       <div className='main-container' style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <div id='numbers' style={{fontSize:`${randoStrSize}em`, fontWeight: randoStrWeight}}><span className='rando-text' onClick={randoTextTapEvent}>{randoStr}</span></div>
-        <IonButton fill='outline' size='large' shape='round' style={{position: 'absolute', bottom: '32px'}}>
+        <IonButton fill='outline' size='large' shape='round' style={{position: 'absolute', bottom: '32px'}} onClick={rollEvent}>
           <IonIcon slot='icon-only' icon={diceSharp} aria-label={t("Roll")}/>
         </IonButton>
       </div>
