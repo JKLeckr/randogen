@@ -1,0 +1,18 @@
+ion-button.button-large {
+    --padding-top: 24px;
+    --padding-start: 24px;
+    --border-width: 4px;
+}
+ion-button.button-large ion-icon {
+    font-size: 2em;
+}
+
+div.main-container {
+    margin-top: 64px;
+    margin-bottom: 160px;
+    padding: 8px 16px;
+}
+span.rando-text {
+    display: inline-block;
+    padding: 0px 8px;
+}

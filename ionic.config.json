@@ -1,0 +1,7 @@
+{
+  "name": "RandoGen",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}
