@@ -35,6 +35,9 @@ importers:
       '@capacitor/toast':
         specifier: ^6.0.0
         version: 6.0.0(@capacitor/core@6.0.0)
+      '@ionic/core':
+        specifier: 8.0.0-rc.2
+        version: 8.0.0-rc.2
       '@ionic/react':
         specifier: 8.0.0-rc.2
         version: 8.0.0-rc.2(react-dom@18.2.0(react@18.2.0))(react@18.2.0)

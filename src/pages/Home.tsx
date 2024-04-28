@@ -1,11 +1,14 @@
-import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonList, IonPage, IonPopover, IonTitle, IonToolbar } from '@ionic/react';
+import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonList, IonPage, IonPopover, IonTitle, IonToolbar, useIonModal } from '@ionic/react';
 import { diceSharp, ellipsisHorizontal, ellipsisVertical } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { Clipboard } from '@capacitor/clipboard';
 import { Toast } from '@capacitor/toast';
-import { getSeed, getRandomSeed, getRangeMin, getRangeMax, setSettings, saveSettings as saveSetSettings } from '../settings';
-import { nextIntRange as randNextRange, setSeed as randSetSeed, reset as randReset } from '../random';
+import { OverlayEventDetail } from '@ionic/core/components';
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { getSeed, getRandomSeed, getRangeMin, getRangeMax, getShowSeed, setSettings, saveSettings as saveSetSettings } from '../settings';
+import { nextIntRange as randNextRange, setSeed as randSetSeed, reset as randReset } from '../random';
+import AboutModal from '../components/AboutModal';
+
 import './css/Home.css';
 
 const copyToClipboard = async (text: string, toast: string = "") => {
@@ -18,12 +21,13 @@ const copyToClipboard = async (text: string, toast: string = "") => {
     });
   }
 }
-const saveSettings = (seed: string, randomSeed: boolean, rangeMin: number, rangeMax: number) => {
+const saveSettings = (seed: string, randomSeed: boolean, rangeMin: number, rangeMax: number, showSeed: boolean) => {
   setSettings({
     seed,
     randomSeed,
     rangeMin,
     rangeMax,
+    showSeed,
   });
   randSetSeed(seed);
   saveSetSettings();
@@ -33,6 +37,7 @@ const Home: React.FC = () => {
   const { t, i18n } = useTranslation();
   const randoMin = useRef(getRangeMin());
   const randoMax = useRef(getRangeMax());
+  const [showRandoSeed, setShowRandoSeed] = useState(getShowSeed());
   const [randoSeed, setRandoSeed] = useState(getSeed());
   const randoRandomSeed = useRef(getRandomSeed());
   const [randoStr, setRandoStr] = useState(localStorage.getItem("randostr") || "0");
@@ -48,14 +53,26 @@ const Home: React.FC = () => {
       copyToClipboard(randoStr, t("CopiedToClipboard"));
     }, [randoStr]
   );
-  const rollEvent = useCallback(
+  const getSeedText = useCallback(
     () => {
-      setRandoStr(String(randNextRange(randoMin.current, randoMax.current)));
-    }, [randoMin, randoMax]
-  );
+      return showRandoSeed ? `${t("Seed")}: ${randoSeed}` : "";
+    }, [showRandoSeed, randoSeed]
+  )
   const resetEvent = () => {
     setRandoStr("0");
     randReset();
+  }
+  const rollEvent = () => {
+    setRandoStr(String(randNextRange(getRangeMin(), getRangeMax())));
+  }
+
+  const [present, dismiss] = useIonModal(AboutModal, {
+    dismiss: (data: string, role: string) => dismiss(data, role),
+  });
+  function openAboutModal() {
+    present({
+      onWillDismiss: (ev: CustomEvent<OverlayEventDetail>) => {},
+    });
   }
 
   return (
@@ -80,13 +97,14 @@ const Home: React.FC = () => {
                 <IonItem button={true} detail={false}>{t("Range")}</IonItem>
               </IonList>
               <IonList>
-                <IonItem button={true} detail={false}>{t("About")}</IonItem>
+                <IonItem button={true} detail={false} onClick={openAboutModal}>{t("About")}</IonItem>
               </IonList>
             </IonContent>
           </IonPopover>
         </IonToolbar>
       </IonHeader>
       <div className='main-container' style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <div id='seedDisplay' style={{position: 'absolute', top: '64px', left: '4px'}}>{getSeedText()}</div>
         <div id='numbers' style={{fontSize:`${randoStrSize}em`, fontWeight: randoStrWeight}}><span className='rando-text' onClick={randoTextTapEvent}>{randoStr}</span></div>
         <IonButton fill='outline' size='large' shape='round' style={{position: 'absolute', bottom: '32px'}} onClick={rollEvent}>
           <IonIcon slot='icon-only' icon={diceSharp} aria-label={t("Roll")}/>

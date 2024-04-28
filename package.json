@@ -22,6 +22,7 @@
     "@capacitor/preferences": "^6.0.0",
     "@capacitor/status-bar": "6.0.0",
     "@capacitor/toast": "^6.0.0",
+    "@ionic/core": "8.0.0-rc.2",
     "@ionic/react": "8.0.0-rc.2",
     "@ionic/react-router": "8.0.0-rc.2",
     "@types/react-router": "^5.1.20",
